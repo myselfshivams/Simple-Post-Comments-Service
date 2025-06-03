@@ -19,6 +19,18 @@ func InitCommentCollection(client *mongo.Client) {
 	commentCollection = client.Database("postcomments").Collection("comments")
 }
 
+// CreateComment godoc
+// @Summary Create a new comment on a post
+// @Description Add a comment to a specific post by postID
+// @Tags comments
+// @Accept json
+// @Produce json
+// @Param comment body models.Comment true "Comment object"
+// @Success 200 {object} models.Comment
+// @Failure 400 {string} string "Invalid input or missing PostID"
+// @Failure 500 {string} string "Server error while saving comment"
+// @Router /comments [post]
+
 func CreateComment(w http.ResponseWriter, r *http.Request) {
 	if commentCollection == nil {
 		http.Error(w, "Database not initialized", http.StatusInternalServerError)
@@ -49,6 +61,17 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(comment)
 }
+
+// GetCommentsByPostID godoc
+// @Summary Get all comments for a specific post
+// @Description Retrieve all comments linked to the given postID
+// @Tags comments
+// @Accept json
+// @Produce json
+// @Param postID query string true "Post ID in hex format"
+// @Failure 400 {string} string "Missing or invalid postID"
+// @Failure 500 {string} string "Server error while fetching comments"
+// @Router /comments/get [get]
 
 func GetCommentsByPostID(w http.ResponseWriter, r *http.Request) {
 	postIDStr := r.URL.Query().Get("postID")

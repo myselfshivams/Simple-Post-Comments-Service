@@ -11,6 +11,17 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+// LikePost godoc
+// @Summary Like a post by a user
+// @Description Adds the userID to the likes array of the post
+// @Tags posts
+// @Accept json
+// @Produce plain
+// @Success 200 {string} string "Post liked successfully"
+// @Failure 400 {string} string "Invalid request body or postID"
+// @Failure 404 {string} string "Post not found"
+// @Failure 500 {string} string "Internal server error"
+// @Router /posts/like [post]
 func LikePost(w http.ResponseWriter, r *http.Request) {
 	type likeRequest struct {
 		PostID string `json:"post_id"`
@@ -50,6 +61,16 @@ func LikePost(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Post liked successfully"))
 }
 
+// UnlikePost godoc
+// @Summary Unlike a post by a user
+// @Description Removes the userID from the likes array of the post
+// @Tags posts
+// @Accept json
+// @Success 200 {string} string "Post unliked successfully"
+// @Failure 400 {string} string "Invalid request body or postID"
+// @Failure 404 {string} string "Post not found"
+// @Failure 500 {string} string "Internal server error"
+// @Router /posts/unlike [post]
 func UnlikePost(w http.ResponseWriter, r *http.Request) {
 	type unlikeRequest struct {
 		PostID string `json:"post_id"`
@@ -89,6 +110,17 @@ func UnlikePost(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Post unliked successfully"))
 }
 
+// GetPostWithLikes godoc
+// @Summary Get a post with total like count
+// @Description Retrieves a post and returns its details along with total likes count
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Param postID query string true "Post ID in hex format"
+// @Failure 400 {string} string "Missing or invalid postID"
+// @Failure 404 {string} string "Post not found"
+// @Failure 500 {string} string "Server error while fetching post"
+// @Router /posts/get [get]
 func GetPostWithLikes(w http.ResponseWriter, r *http.Request) {
 	postIDStr := r.URL.Query().Get("postID")
 	if postIDStr == "" {

@@ -1,0 +1,157 @@
+basePath: /
+definitions:
+  models.Post:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: integer
+      id:
+        type: string
+      likes:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+      user_id:
+        description: 6-8 hex characters + "@itshivam.in"
+        type: string
+    type: object
+host: backend-post-comment-service.itshivam.in
+info:
+  contact: {}
+  description: API for creating posts, comments, and likes.
+  title: Post Comments API
+  version: "1.0"
+paths:
+  /posts:
+    post:
+      consumes:
+      - application/json
+      description: Creates a post with optional userID (auto-generated if not provided)
+      parameters:
+      - description: Post object
+        in: body
+        name: post
+        required: true
+        schema:
+          $ref: '#/definitions/models.Post'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Post'
+        "400":
+          description: Invalid input or userid format
+          schema:
+            type: string
+        "500":
+          description: Server error while inserting post
+          schema:
+            type: string
+      summary: Create a new post
+      tags:
+      - posts
+  /posts/all:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all posts with total count
+      produces:
+      - application/json
+      responses:
+        "500":
+          description: Server error while fetching posts
+          schema:
+            type: string
+      summary: Get all posts
+      tags:
+      - posts
+  /posts/get:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a post and returns its details along with total likes
+        count
+      parameters:
+      - description: Post ID in hex format
+        in: query
+        name: postID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "400":
+          description: Missing or invalid postID
+          schema:
+            type: string
+        "404":
+          description: Post not found
+          schema:
+            type: string
+        "500":
+          description: Server error while fetching post
+          schema:
+            type: string
+      summary: Get a post with total like count
+      tags:
+      - posts
+  /posts/like:
+    post:
+      consumes:
+      - application/json
+      description: Adds the userID to the likes array of the post
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: Post liked successfully
+          schema:
+            type: string
+        "400":
+          description: Invalid request body or postID
+          schema:
+            type: string
+        "404":
+          description: Post not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Like a post by a user
+      tags:
+      - posts
+  /posts/unlike:
+    post:
+      consumes:
+      - application/json
+      description: Removes the userID from the likes array of the post
+      responses:
+        "200":
+          description: Post unliked successfully
+          schema:
+            type: string
+        "400":
+          description: Invalid request body or postID
+          schema:
+            type: string
+        "404":
+          description: Post not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Unlike a post by a user
+      tags:
+      - posts
+schemes:
+- https
+swagger: "2.0"

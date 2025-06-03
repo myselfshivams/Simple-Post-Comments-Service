@@ -37,6 +37,17 @@ func isValidUserID(userID string) bool {
 	return userIDRegex.MatchString(userID)
 }
 
+// CreatePost godoc
+// @Summary Create a new post
+// @Description Creates a post with optional userID (auto-generated if not provided)
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Param post body models.Post true "Post object"
+// @Success 200 {object} models.Post
+// @Failure 400 {string} string "Invalid input or userid format"
+// @Failure 500 {string} string "Server error while inserting post"
+// @Router /posts [post]
 func CreatePost(w http.ResponseWriter, r *http.Request) {
 	var post models.Post
 	err := json.NewDecoder(r.Body).Decode(&post)
@@ -67,6 +78,14 @@ func CreatePost(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(post)
 }
 
+// GetAllPosts godoc
+// @Summary Get all posts
+// @Description Retrieves all posts with total count
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Failure 500 {string} string "Server error while fetching posts"
+// @Router /posts/all [get]
 func GetAllPosts(w http.ResponseWriter, r *http.Request) {
 	cursor, err := postCollection.Find(context.Background(), bson.M{})
 	if err != nil {
