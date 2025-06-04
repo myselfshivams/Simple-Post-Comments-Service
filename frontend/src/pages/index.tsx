@@ -45,14 +45,6 @@ const HomePage = () => {
   const [newPost, setNewPost] = useState({ title: "", content: "" });
   const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
   const [processingLikes, setProcessingLikes] = useState<Set<string>>(new Set());
-  
-  const [userProfileImages] = useState<{[key: string]: number}>(() => {
-    const images: {[key: string]: number} = {};
-    for (let i = 1; i <= 10; i++) {
-      images[`profile-${i}`] = i;
-    }
-    return images;
-  });
 
   useEffect(() => {
     const storedSession = localStorage.getItem("sessionId");
@@ -158,8 +150,8 @@ const HomePage = () => {
 
   const handleLike = async (postId: string) => {
     if (processingLikes.has(postId)) return;
-    
-    setProcessingLikes(prev => {
+
+    setProcessingLikes((prev) => {
       const newSet = new Set(prev);
       newSet.add(postId);
       return newSet;
@@ -186,6 +178,7 @@ const HomePage = () => {
             const newLikes = wasLiked
               ? p.likes?.filter((u) => u !== `${sessionId}@itshivam.in`) || []
               : [...(p.likes || []), `${sessionId}@itshivam.in`];
+            toast.success(wasLiked ? "Unliked!" : "Liked!");
             return {
               ...p,
               likes: newLikes,
@@ -195,13 +188,11 @@ const HomePage = () => {
           return p;
         })
       );
-
-      toast.success(wasLiked ? "Unliked!" : "Liked!");
     } catch (error) {
       console.error("Error toggling like:", error);
       toast.error("Failed to toggle like.");
     } finally {
-      setProcessingLikes(prev => {
+      setProcessingLikes((prev) => {
         const newSet = new Set(prev);
         newSet.delete(postId);
         return newSet;
@@ -232,25 +223,47 @@ const HomePage = () => {
 
   const getUserProfileImage = (userId: string) => {
     if (!userId) return "/profile/1.png";
-    
-    const username = userId.split('@')[0];
-    
-    const imageIndex = Math.abs(hashCode(username)) % 10 + 1;
-    return `/profile/1.png`;
+    return "/profile/1.png";
   };
 
-  const hashCode = (str: string): number => {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = (hash << 5) - hash + char;
-      hash |= 0; 
-    }
-    return hash;
-  };
+  // Loading skeleton
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
+        <Toaster position="top-right" />
+        {/* Skeleton for Create Post */}
+        <div className="bg-white rounded-xl shadow-md p-6 animate-pulse space-y-4">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+            <div className="h-4 bg-gray-200 rounded w-24"></div>
+          </div>
+          <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+          <div className="h-6 bg-gray-200 rounded"></div>
+          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+        </div>
 
-  if (loading)
-    return <div className="text-center py-10">Loading posts...</div>;
+        {/* Skeleton for 3 Post Cards */}
+        {[1, 2, 3].map((i) => (
+          <div
+            key={i}
+            className="bg-white rounded-xl shadow-md p-6 animate-pulse space-y-4"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+              <div className="h-4 bg-gray-200 rounded w-24"></div>
+            </div>
+            <div className="h-6 bg-gray-200 rounded w-1/2"></div>
+            <div className="h-4 bg-gray-200 rounded"></div>
+            <div className="flex space-x-4">
+              <div className="w-5 h-5 bg-gray-200 rounded-full"></div>
+              <div className="w-5 h-5 bg-gray-200 rounded-full"></div>
+              <div className="w-5 h-5 bg-gray-200 rounded-full"></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
@@ -312,8 +325,8 @@ const HomePage = () => {
           const isProcessing = processingLikes.has(post.id);
           const isLiked = post.likes?.includes(`${sessionId}@itshivam.in`);
           const isCurrentUser = post.user_id === `${sessionId}@itshivam.in`;
-          const username = post.user_id.split('@')[0] || 'Anonymous';
-          
+          const username = post.user_id.split("@")[0] || "Anonymous";
+
           return (
             <div
               key={post.id}
@@ -333,9 +346,9 @@ const HomePage = () => {
                       />
                     </div>
                     <div>
-                        <div className="font-bold text-gray-900 ">
+                      <div className="font-bold text-gray-900">
                         {isCurrentUser ? "You" : `User-${username}`}
-                        </div>
+                      </div>
                       <div className="text-xs text-gray-500">
                         {format(new Date(post.created_at * 1000), "MMM d, yyyy HH:mm")}
                       </div>
@@ -366,9 +379,7 @@ const HomePage = () => {
                     onClick={() => handleLike(post.id)}
                     disabled={isProcessing}
                     className={`flex items-center space-x-1 transition-colors ${
-                      isLiked
-                        ? "text-red-500"
-                        : "hover:text-red-500"
+                      isLiked ? "text-red-500" : "hover:text-red-500"
                     } ${isProcessing ? "opacity-50 cursor-not-allowed" : ""}`}
                   >
                     {isLiked ? <FaHeart /> : <FaRegHeart />}
