@@ -241,6 +241,7 @@ const PostDetailPage = () => {
             src="/profile/1.png"
             alt="Profile"
             className="w-10 h-10 rounded-full object-cover"
+            draggable={false}
           />
           <span className="text-sm font-medium text-gray-700">
             {postDisplayName}
@@ -437,6 +438,7 @@ const PostDetailPage = () => {
                     src="/profile/1.png"
                     alt="Profile"
                     className="w-8 h-8 rounded-full object-cover"
+                    draggable={false}
                   />
                   <div className="flex justify-between w-full items-center">
                     <span className="text-sm font-medium text-gray-700">

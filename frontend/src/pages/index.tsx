@@ -25,7 +25,7 @@ type Post = {
 
 type CommentCountResponse = {
   postID: string;
-  comments: any[];
+  comments: { id: string; user_id: string; content: string; created_at: number }[];
   comment_count: number;
 };
 
@@ -286,6 +286,7 @@ const HomePage = () => {
               className="rounded-full object-cover"
               width={40}
               height={40}
+              draggable={false}
             />
           </div>
           <div>
@@ -343,6 +344,7 @@ const HomePage = () => {
                         className="rounded-full object-cover"
                         width={40}
                         height={40}
+                        draggable={false}
                       />
                     </div>
                     <div>
