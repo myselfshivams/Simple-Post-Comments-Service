@@ -74,4 +74,3 @@ We use **MongoDB**, a flexible NoSQL database, to store posts and comments as JS
 - Frontend on Vercel: https://post-comment-service.itshivam.in/
 - Backend on Ubuntu + Nginx: https://backend-post-comment-service.itshivam.in/
 - API docs: https://backend-post-comment-service.itshivam.in/swagger/
-
