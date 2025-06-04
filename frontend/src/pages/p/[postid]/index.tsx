@@ -1,14 +1,24 @@
+"use client";
+
 import { useRouter } from "next/router";
 import { useEffect, useState, useRef } from "react";
 import { format } from "date-fns";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { FaArrowLeft, FaHeart, FaRegHeart, FaCommentDots, FaBold, FaItalic, FaLink } from "react-icons/fa";
+import {
+  FaArrowLeft,
+  FaHeart,
+  FaRegHeart,
+  FaCommentDots,
+  FaBold,
+  FaItalic,
+  FaLink,
+} from "react-icons/fa";
 import { API_BASE_URL } from "@/utils/api";
 
 type Post = {
   id: string;
-  user_id: string;
+  user_id: string; 
   title: string;
   content: string;
   created_at: number;
@@ -16,7 +26,7 @@ type Post = {
 };
 
 type Comment = {
-  user_id: string;
+  user_id: string; 
   id: string;
   post_id: string;
   content: string;
@@ -25,7 +35,7 @@ type Comment = {
 
 const PostDetailPage = () => {
   const router = useRouter();
-  const { postid } = router.query; 
+  const { postid } = router.query;
   const postId = Array.isArray(postid) ? postid[0] : postid || "";
 
   const [post, setPost] = useState<Post | null>(null);
@@ -72,9 +82,7 @@ const PostDetailPage = () => {
 
         const initialLikes: string[] = fetchedPost.likes || [];
         setLikeCount(postData.like_count ?? initialLikes.length);
-        setIsLiked(
-          initialLikes.includes(`${sessionId}@itshivam.in`)
-        );
+        setIsLiked(initialLikes.includes(`${sessionId}@itshivam.in`));
 
         const commentsRes = await fetch(
           `${API_BASE_URL}/comments/get?postID=${postId}`
@@ -161,153 +169,166 @@ const PostDetailPage = () => {
   if (!post)
     return <div className="text-center py-10">Post not found.</div>;
 
+  const uploaderPrefix = post.user_id?.split("@")[0] || "";
+  const postDisplayName =
+    uploaderPrefix === sessionId ? "You" : `user-${uploaderPrefix}`;
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-  <button
-  onClick={() => router.push("/")}
-  className="mb-6 text-blue-600 hover:text-blue-800 flex items-center gap-2"
->
-  <FaArrowLeft className="text-base" />
-  Back to feed
-</button>
+      <button
+        onClick={() => router.push("/")}
+        className="mb-6 text-blue-600 hover:text-blue-800 flex items-center gap-2"
+      >
+        <FaArrowLeft className="text-base" />
+        Back to feed
+      </button>
 
-      <div className="bg-white rounded-xl shadow-md p-6 mb-8">
-        <div className="flex justify-between items-start">
-          <h1 className="text-2xl font-bold text-gray-800">{post.title}</h1>
-          <span className="text-sm text-gray-500">
-            {format(new Date(post.created_at * 1000), "MMM d, yyyy HH:mm")}
+      {/* Post Card */}
+      <div className="bg-white rounded-xl shadow-md p-6 mb-8 space-y-4">
+        {/* Uploader Info */}
+        <div className="flex items-center gap-3">
+          <img
+            src="/profile/1.png"
+            alt="Profile"
+            className="w-10 h-10 rounded-full object-cover"
+          />
+          <span className="text-sm font-medium text-gray-700">
+            {postDisplayName}
           </span>
         </div>
-        <div className="mt-4 prose text-black max-w-none">
+
+        {/* Title & Timestamp */}
+        <div className="flex justify-between items-start">
+          <h1 className="text-2xl font-bold text-gray-800">
+            {post.title}
+          </h1>
+          <span className="text-sm text-gray-500">
+            {format(
+              new Date(post.created_at * 1000),
+              "MMM d, yyyy HH:mm"
+            )}
+          </span>
+        </div>
+
+        {/* Content */}
+        <div className="mt-2 prose text-black max-w-none">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
             {post.content}
           </ReactMarkdown>
         </div>
 
-        <div className="flex mt-6 space-x-6 text-gray-500">
+        {/* Actions: Like & Comment Count */}
+        <div className="flex mt-4 space-x-6 text-gray-500">
+          {/* Like Button */}
           <button
-  onClick={handleLike}
-  className={`flex items-center space-x-1 transition-colors ${
-    isLiked ? "text-red-500" : "text-gray-500 hover:text-red-500"
-  }`}
->
-  {isLiked ? <FaHeart /> : <FaRegHeart />}
-  <span>{likeCount}</span>
-</button>
+            onClick={handleLike}
+            className={`flex items-center space-x-1 transition-colors ${
+              isLiked ? "text-red-500" : "text-gray-500 hover:text-red-500"
+            }`}
+          >
+            {isLiked ? <FaHeart /> : <FaRegHeart />}
+            <span>{likeCount}</span>
+          </button>
 
-
-       <div className="flex items-center space-x-1 text-gray-500">
-  <FaCommentDots />
-  <span>{commentCount}</span>
-</div>
-
+          {/* Comment Count */}
+          <div className="flex items-center space-x-1 text-gray-500">
+            <FaCommentDots />
+            <span>{commentCount}</span>
+          </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-md p-6 mb-8">
-        <div className="flex justify-between items-center mb-4 text-black">
-          <h2 className="text-xl font-semibold">Add a comment</h2>
+      {/* Comment Form */}
+      <div className="bg-white rounded-xl shadow-md p-6 mb-8 space-y-4">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-semibold text-black">
+            Add a comment
+          </h2>
           <button
             onClick={() => setMarkdownHelpVisible((vis) => !vis)}
-            className="text-sm text-blue-600 hover:text-blue-800"
+            className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
           >
+            <FaCommentDots />
             {markdownHelpVisible ? "Hide Help" : "Markdown Help"}
           </button>
         </div>
 
         {markdownHelpVisible && (
-          <div className="bg-gray-300 p-4 rounded-lg mb-4 text-sm">
-           <div className="flex space-x-2 mb-2">
-  <button
-    type="button"
-    onClick={() => formatText("bold")}
-    className="p-2 bg-gray-100"
-  >
-    <FaBold color="black"/>
-  </button>
-  <button
-    type="button"
-    onClick={() => formatText("italic")}
-  className="p-2 bg-gray-100"
-  >
-    <FaItalic color="black"/>
-  </button>
-  <button
-    type="button"
-    onClick={() => formatText("link")}
-  className="p-2 bg-gray-100"
-  >
-    <FaLink color="black"/>
-  </button>
-</div>
-            <p className="mb-2 text-black">
-              Use <strong>**bold text**</strong> for bold,{" "}
-              <em>*italic text*</em> for italic, and{" "}
-              <a href="https://example.com" target="_blank" rel="noopener noreferrer">
-                [link text](https://)
-              </a>{" "}
-              for links.
+          <div className="bg-gray-200 p-4 rounded-lg mb-4 text-sm text-black">
+            <div className="flex space-x-2 mb-2">
+              <button
+                type="button"
+                onClick={() => formatText("bold")}
+                className="p-2 bg-gray-300 rounded hover:bg-gray-400"
+              >
+                <FaBold />
+              </button>
+              <button
+                type="button"
+                onClick={() => formatText("italic")}
+                className="p-2 bg-gray-300 rounded hover:bg-gray-400"
+              >
+                <FaItalic />
+              </button>
+              <button
+                type="button"
+                onClick={() => formatText("link")}
+                className="p-2 bg-gray-300 rounded hover:bg-gray-400"
+              >
+                <FaLink />
+              </button>
+            </div>
+            <p className="mb-2">
+              Use <strong>**bold text**</strong>,{" "}
+              <em>*italic text*</em>, or{" "}
+              <a
+                href="https://itshivam.in"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline"
+              >
+                [link](https://)
+              </a>
+              .
             </p>
-            <p className="text-gray-900">
-              Markdown is supported in comments. You can use{" "}
-              <code>**bold**</code>, <code>*italic*</code>, and{" "}
-              <code>[link](url)</code>.
-            </p>
+            <p>Markdown supported in comments.</p>
           </div>
         )}
 
         {isEditing ? (
-          <form onSubmit={handleCommentSubmit}>
-            <div className="flex space-x-2 mb-2">
+          <form onSubmit={handleCommentSubmit} className="space-y-4">
+            <div className="flex space-x-2">
               <button
-    type="button"
-    onClick={() => formatText("bold")}
-    className="p-2 bg-gray-700 rounded hover:bg-gray-900"
-  >
-    <FaBold />
+                type="button"
+                onClick={() => formatText("bold")}
+                className="p-2 bg-gray-300 rounded hover:bg-gray-400"
+              >
+                <FaBold />
               </button>
               <button
-    type="button"
-    onClick={() => formatText("italic")}
-    className="p-2 bg-gray-700 rounded hover:bg-gray-900"
-  >
-    <FaItalic />
+                type="button"
+                onClick={() => formatText("italic")}
+                className="p-2 bg-gray-300 rounded hover:bg-gray-400"
+              >
+                <FaItalic />
               </button>
-               <button
-    type="button"
-    onClick={() => formatText("link")}
-    className="p-2 bg-gray-700 rounded hover:bg-gray-900"
-  >
-    <FaLink />
+              <button
+                type="button"
+                onClick={() => formatText("link")}
+                className="p-2 bg-gray-300 rounded hover:bg-gray-400"
+              >
+                <FaLink />
               </button>
             </div>
 
-            <div className="flex flex-col space-y-4">
-              <textarea
-                ref={textareaRef}
-                placeholder="Write your comment"
-                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                rows={4}
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-              />
-              <button
-                type="button"
-                onClick={() => setMarkdownHelpVisible((prev) => !prev)}
-                className="self-end text-sm text-blue-600 hover:text-blue-800 flex items-center gap-2"
-              >
-                <FaCommentDots />
-                {markdownHelpVisible ? "Hide Preview" : "Preview Comment"}
-              </button>
-            
-              {markdownHelpVisible && (
-                <div className="prose prose-sm max-w-none text-black border rounded-lg p-4 bg-gray-100 mb-4">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {newComment}
-                  </ReactMarkdown>
-                </div>
-              )}
-            </div>
+            <textarea
+              ref={textareaRef}
+              placeholder="Write your comment"
+              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+              rows={4}
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+            />
 
             <div className="flex space-x-3">
               <button
@@ -331,15 +352,16 @@ const PostDetailPage = () => {
         ) : (
           <button
             onClick={() => setIsEditing(true)}
-            className="w-full p-4 border-2 border-dashed rounded-lg text-black hover:border-blue-500 hover:text-blue-500 transition-colors"
+            className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg text-black hover:border-blue-500 hover:text-blue-500 transition-colors"
           >
             + Add a comment
           </button>
         )}
       </div>
 
+      {/* Comments List */}
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-gray-400">
+        <h2 className="text-2xl font-bold text-gray-700">
           Comments ({commentCount})
         </h2>
 
@@ -348,26 +370,44 @@ const PostDetailPage = () => {
             No comments yet. Be the first to comment!
           </p>
         ) : (
-          comments.map((comment) => (
-            <div
-              key={comment.id}
-              className="bg-white rounded-xl shadow-md p-6"
-            >
-              <div className="flex justify-between items-start mb-2">
-                <span className="text-sm text-gray-500">
-                  {format(
-                    new Date(comment.created_at * 1000),
-                    "MMM d, yyyy HH:mm"
-                  )}
-                </span>
+          comments.map((comment) => {
+            const commenterPrefix = comment.user_id?.split("@")[0] || "";
+            const commentDisplayName =
+              commenterPrefix === sessionId
+                ? "You"
+                : `user-${commenterPrefix}`;
+
+            return (
+              <div
+                key={comment.id}
+                className="bg-white rounded-xl shadow-md p-6 space-y-2"
+              >
+                <div className="flex items-center gap-3">
+                  <img
+                    src="/profile/1.png"
+                    alt="Profile"
+                    className="w-8 h-8 rounded-full object-cover"
+                  />
+                  <div className="flex justify-between w-full items-center">
+                    <span className="text-sm font-medium text-gray-700">
+                      {commentDisplayName}
+                    </span>
+                    <span className="text-sm text-gray-500">
+                      {format(
+                        new Date(comment.created_at * 1000),
+                        "MMM d, yyyy HH:mm"
+                      )}
+                    </span>
+                  </div>
+                </div>
+                <div className="prose prose-sm max-w-none text-black">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {comment.content}
+                  </ReactMarkdown>
+                </div>
               </div>
-              <div className="prose prose-sm max-w-none text-black">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {comment.content}
-                </ReactMarkdown>
-              </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>

@@ -12,6 +12,7 @@ import {
 } from "react-icons/fa";
 import toast, { Toaster } from "react-hot-toast";
 import { API_BASE_URL } from "@/utils/api";
+import Image from "next/image";
 
 type Post = {
   id: string;
@@ -44,6 +45,14 @@ const HomePage = () => {
   const [newPost, setNewPost] = useState({ title: "", content: "" });
   const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([]);
   const [processingLikes, setProcessingLikes] = useState<Set<string>>(new Set());
+  
+  const [userProfileImages] = useState<{[key: string]: number}>(() => {
+    const images: {[key: string]: number} = {};
+    for (let i = 1; i <= 10; i++) {
+      images[`profile-${i}`] = i;
+    }
+    return images;
+  });
 
   useEffect(() => {
     const storedSession = localStorage.getItem("sessionId");
@@ -161,7 +170,6 @@ const HomePage = () => {
       if (!post) return;
 
       const wasLiked = post.likes?.includes(`${sessionId}@itshivam.in`);
-      const action = wasLiked ? "unlike" : "like";
 
       await fetch(`${API_BASE_URL}/posts/like`, {
         method: "POST",
@@ -214,14 +222,31 @@ const HomePage = () => {
       let updated: string[];
       if (prev.includes(postId)) {
         updated = prev.filter((id) => id !== postId);
-        toast("Removed bookmark");
       } else {
         updated = [...prev, postId];
-        toast("Bookmarked");
       }
       localStorage.setItem("bookmarkedPosts", JSON.stringify(updated));
       return updated;
     });
+  };
+
+  const getUserProfileImage = (userId: string) => {
+    if (!userId) return "/profile/1.png";
+    
+    const username = userId.split('@')[0];
+    
+    const imageIndex = Math.abs(hashCode(username)) % 10 + 1;
+    return `/profile/1.png`;
+  };
+
+  const hashCode = (str: string): number => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash |= 0; 
+    }
+    return hash;
   };
 
   if (loading)
@@ -240,6 +265,20 @@ const HomePage = () => {
         <h2 className="text-xl font-semibold mb-4 text-black">
           Create New Post
         </h2>
+        <div className="flex items-center mb-4">
+          <div className="relative w-10 h-10 mr-3">
+            <Image
+              src="/profile/1.png"
+              alt="Your profile"
+              className="rounded-full object-cover"
+              width={40}
+              height={40}
+            />
+          </div>
+          <div>
+            <div className="font-bold text-gray-900">You</div>
+          </div>
+        </div>
         <input
           type="text"
           placeholder="Title"
@@ -272,32 +311,56 @@ const HomePage = () => {
           const isBookmarked = bookmarkedIds.includes(post.id);
           const isProcessing = processingLikes.has(post.id);
           const isLiked = post.likes?.includes(`${sessionId}@itshivam.in`);
+          const isCurrentUser = post.user_id === `${sessionId}@itshivam.in`;
+          const username = post.user_id.split('@')[0] || 'Anonymous';
           
           return (
             <div
               key={post.id}
-              className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow relative"
+              className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow"
             >
-              
-              <button
-                onClick={() => toggleBookmark(post.id)}
-                className="absolute bottom-4 right-4 text-gray-400 hover:text-black-500 z-10"
-              >
-                {isBookmarked ? <FaBookmark /> : <FaRegBookmark />}
-              </button>
-
               <div className="p-6">
-                <div className="flex justify-between items-start">
-                  <h2 className="text-xl font-bold text-gray-800">
-                    {post.title}
-                  </h2>
-                  <span className="text-sm text-gray-500">
-                    {format(new Date(post.created_at * 1000), "MMM d, yyyy HH:mm")}
-                  </span>
+                {/* User info header */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center">
+                    <div className="relative w-10 h-10 mr-3">
+                      <Image
+                        src={getUserProfileImage(post.user_id)}
+                        alt={isCurrentUser ? "Your profile" : `${username}'s profile`}
+                        className="rounded-full object-cover"
+                        width={40}
+                        height={40}
+                      />
+                    </div>
+                    <div>
+                        <div className="font-bold text-gray-900 ">
+                        {isCurrentUser ? "You" : `User-${username}`}
+                        </div>
+                      <div className="text-xs text-gray-500">
+                        {format(new Date(post.created_at * 1000), "MMM d, yyyy HH:mm")}
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => toggleBookmark(post.id)}
+                    className="text-gray-400 hover:text-yellow-500"
+                  >
+                    {isBookmarked ? (
+                      <FaBookmark className="text-yellow-500" />
+                    ) : (
+                      <FaRegBookmark />
+                    )}
+                  </button>
                 </div>
-                <p className="mt-3 text-gray-600">{post.content}</p>
 
-                <div className="flex mt-6 space-x-6 text-gray-500">
+                {/* Post content */}
+                <h2 className="text-xl font-bold text-gray-800 mb-3">
+                  {post.title}
+                </h2>
+                <p className="text-gray-600 mb-4">{post.content}</p>
+
+                {/* Action buttons */}
+                <div className="flex space-x-6 text-gray-500 pt-4 border-t border-gray-100">
                   {/* Like Button */}
                   <button
                     onClick={() => handleLike(post.id)}
