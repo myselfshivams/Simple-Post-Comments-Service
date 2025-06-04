@@ -36,6 +36,7 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Database not initialized", http.StatusInternalServerError)
 		return
 	}
+
 	var comment models.Comment
 
 	err := json.NewDecoder(r.Body).Decode(&comment)
@@ -47,6 +48,11 @@ func CreateComment(w http.ResponseWriter, r *http.Request) {
 	if comment.PostID.IsZero() {
 		http.Error(w, "PostID is required", http.StatusBadRequest)
 		return
+	}
+
+	// Generate user_id if not provided
+	if comment.UserID == "" {
+		comment.UserID = generateUserID()
 	}
 
 	comment.ID = primitive.NewObjectID()
