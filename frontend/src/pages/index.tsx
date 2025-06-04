@@ -126,6 +126,7 @@ const HomePage = () => {
           title: newPost.title,
           content: newPost.content,
           user_id: `${sessionId}@itshivam.in`,
+          likes: [`${sessionId}@itshivam.in`]
         }),
       });
 
@@ -163,7 +164,7 @@ const HomePage = () => {
 
       const wasLiked = post.likes?.includes(`${sessionId}@itshivam.in`);
 
-      await fetch(`${API_BASE_URL}/posts/like`, {
+      await fetch(`${API_BASE_URL}/posts/${wasLiked ? "unlike" : "like"}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
